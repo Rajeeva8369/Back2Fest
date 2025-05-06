@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --festival-purple: #6937FF;
+  --festival-pink: #FF2D9F;
+  --festival-blue: #00D0FF;
+  --festival-green: #07FF5E;
+  --festival-yellow: #FFEB3B;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #090420;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.canvas-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.ui-container {
+  position: relative;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.ui-container button, 
+.ui-container .interactive {
+  pointer-events: auto;
+}
+
+.gradient-text {
+  background: linear-gradient(90deg, var(--festival-purple), var(--festival-pink), var(--festival-blue));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-fill-color: transparent;
+}
+
+.glow {
+  text-shadow: 0 0 10px rgba(255, 45, 159, 0.5),
+               0 0 20px rgba(0, 208, 255, 0.3);
+}
+
+.loading-bar {
+  height: 5px;
+  background: linear-gradient(90deg, var(--festival-purple), var(--festival-pink), var(--festival-blue));
+  width: 0%;
+  transition: width 0.5s ease-out;
+}
+
+.info-panel {
+  backdrop-filter: blur(8px);
+  background-color: rgba(9, 4, 32, 0.7);
+  border: 1px solid rgba(105, 55, 255, 0.3);
+  border-radius: 8px;
+}
+
+.stage-marker {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--festival-pink);
+  border: 2px solid white;
+  box-shadow: 0 0 0 4px rgba(255, 45, 159, 0.3),
+              0 0 20px rgba(255, 45, 159, 0.7);
+  transform: translateX(-50%) translateY(-50%);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.stage-marker:hover {
+  transform: translateX(-50%) translateY(-50%) scale(1.2);
+  box-shadow: 0 0 0 4px rgba(255, 45, 159, 0.5),
+              0 0 30px rgba(255, 45, 159, 0.9);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(9, 4, 32, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--festival-purple);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--festival-pink);
+}
