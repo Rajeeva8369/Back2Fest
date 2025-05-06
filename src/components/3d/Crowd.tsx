@@ -1,3 +1,4 @@
+// Crowd.tsx – Foule animée inspirée du Frequency Festival
 import React, { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
@@ -12,112 +13,68 @@ interface CrowdProps {
 const Crowd: React.FC<CrowdProps> = ({ position, count, area, scattered = false }) => {
   const [width, depth] = area;
   const crowdRef = useRef<THREE.InstancedMesh>(null);
-  
-  // Create a simple person shape - a cylinder with a sphere on top
-  const dummyObject = useMemo(() => {
-    const dummy = new THREE.Object3D();
-    return dummy;
-  }, []);
-  
-  // Generate random positions for each instance
+
+  const dummyObject = useMemo(() => new THREE.Object3D(), []);
+
   const positions = useMemo(() => {
     return Array.from({ length: count }, () => {
-      // Create more natural crowd patterns
       let x, z;
-      
       if (scattered) {
-        // For scattered areas like camping - fully random
         x = (Math.random() - 0.5) * width;
         z = (Math.random() - 0.5) * depth;
       } else {
-        // For stage areas - clustered towards the stage
-        const distanceFromCenter = Math.random() * 0.8; // 0-0.8 to keep people more centered
-        const angle = Math.random() * Math.PI; // Semi-circle in front of stage
-        
-        x = Math.sin(angle) * distanceFromCenter * (width / 2);
-        z = Math.cos(angle) * distanceFromCenter * (depth / 2);
+        const distance = Math.random() * 0.9;
+        const angle = Math.random() * Math.PI;
+        x = Math.sin(angle) * distance * (width / 2);
+        z = Math.cos(angle) * distance * (depth / 2);
       }
-      
-      const y = 0.9 + Math.random() * 0.3; // Slight height variation
+      const y = 0.9 + Math.random() * 0.2;
       return [x, y, z];
     });
   }, [count, width, depth, scattered]);
-  
-  // Animation timing offsets to make crowd movement look more natural
-  const animationOffsets = useMemo(() => {
-    return Array.from({ length: count }, () => Math.random() * Math.PI * 2);
-  }, [count]);
-  
-  // Animate the crowd
+
+  const animationOffsets = useMemo(() => (
+    Array.from({ length: count }, () => Math.random() * Math.PI * 2)
+  ), [count]);
+
   useFrame(({ clock }) => {
     if (!crowdRef.current) return;
-    
     const time = clock.getElapsedTime();
-    
-    // Update each instance
     for (let i = 0; i < count; i++) {
       const [x, y, z] = positions[i];
       const offset = animationOffsets[i];
-      
-      // Add subtle movement for each person - "dancing"
-      const bobbingY = y + Math.sin(time * 2 + offset) * 0.1;
-      const swayX = x + Math.sin(time + offset) * 0.05;
-      
-      // Position and slight rotation
+      const bobbingY = y + Math.sin(time * 3 + offset) * 0.08;
+      const swayX = x + Math.sin(time + offset) * 0.04;
       dummyObject.position.set(swayX, bobbingY, z);
-      dummyObject.rotation.y = Math.sin(time * 0.5 + offset) * 0.5;
+      dummyObject.rotation.y = Math.sin(time * 0.6 + offset) * 0.4;
       dummyObject.updateMatrix();
-      
-      // Update the instance matrix
       crowdRef.current.setMatrixAt(i, dummyObject.matrix);
     }
-    
     crowdRef.current.instanceMatrix.needsUpdate = true;
   });
-  
-  // Colors for the crowd
+
   const colors = useMemo(() => {
-    const colorArray = new Float32Array(count * 3);
+    const array = new Float32Array(count * 3);
     const color = new THREE.Color();
-    
-    // Generate random colors for each person (clothing)
+    const palette = [
+      '#f72585', '#b5179e', '#7209b7', '#560bad', '#480ca8', '#3a0ca3', '#3f37c9', '#4895ef', '#4cc9f0'
+    ];
     for (let i = 0; i < count; i++) {
-      // Pick from a festival-appropriate palette
-      const colorOptions = [
-        '#e63946', // red
-        '#f1faee', // white
-        '#a8dadc', // light blue
-        '#457b9d', // dark blue
-        '#1d3557', // navy
-        '#ff8c00', // orange
-        '#4a4e69', // slate
-        '#9d4edd', // purple
-      ];
-      
-      const randomColor = colorOptions[Math.floor(Math.random() * colorOptions.length)];
-      color.set(randomColor);
-      color.toArray(colorArray, i * 3);
+      color.set(palette[Math.floor(Math.random() * palette.length)]);
+      color.toArray(array, i * 3);
     }
-    
-    return colorArray;
+    return array;
   }, [count]);
-  
+
   return (
     <group position={position}>
-      {/* Body */}
-      <instancedMesh
-        ref={crowdRef}
-        args={[undefined, undefined, count]}
-        castShadow
-      >
-        <cylinderGeometry args={[0.2, 0.2, 1.2, 8]} />
+      <instancedMesh ref={crowdRef} args={[undefined, undefined, count]} castShadow>
+        <cylinderGeometry args={[0.25, 0.25, 1.2, 8]} />
         <meshStandardMaterial vertexColors={true} />
       </instancedMesh>
-      
-      {/* Heads */}
       <instancedMesh args={[undefined, undefined, count]} castShadow>
-        <sphereGeometry args={[0.2, 16, 16]} />
-        <meshStandardMaterial color="#f5d0c5" />
+        <sphereGeometry args={[0.22, 16, 16]} />
+        <meshStandardMaterial color="#ffe0bd" />
       </instancedMesh>
     </group>
   );

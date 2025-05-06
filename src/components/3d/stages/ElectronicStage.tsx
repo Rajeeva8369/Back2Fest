@@ -1,3 +1,4 @@
+// ElectronicStage.tsx – Version immersive inspirée du Frequency Festival
 import React, { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useFestival } from '../../../context/FestivalContext';
@@ -11,106 +12,89 @@ interface ElectronicStageProps {
 
 const ElectronicStage: React.FC<ElectronicStageProps> = ({ position, rotation, scale }) => {
   const { isDayMode } = useFestival();
-  const tentRef = useRef<THREE.Group>(null);
   const lightsRef = useRef<THREE.Group>(null);
-  
-  // Animate lights
+
   useFrame(({ clock }) => {
     if (!isDayMode && lightsRef.current) {
       const time = clock.getElapsedTime();
-      
-      // Rotate the light rig
-      lightsRef.current.rotation.y = Math.sin(time * 0.5) * 0.2;
-      
-      // Update each light in the rig
+      lightsRef.current.rotation.y = Math.sin(time * 0.6) * 0.4;
       lightsRef.current.children.forEach((light, i) => {
         if (light instanceof THREE.PointLight) {
-          // Pulsating intensity
-          const pulseIntensity = 3 + Math.sin(time * 3 + i) * 2;
-          light.intensity = pulseIntensity;
-          
-          // Color cycling
-          const hue = ((time * 0.2) + (i * 0.2)) % 1;
-          const color = new THREE.Color().setHSL(hue, 1, 0.5);
-          light.color = color;
+          const intensity = 2.5 + Math.sin(time * 4 + i) * 1.5;
+          light.intensity = intensity;
+          const hue = ((time * 0.3) + (i * 0.2)) % 1;
+          light.color = new THREE.Color().setHSL(hue, 1, 0.5);
         }
       });
     }
   });
-  
+
   return (
-    <group 
-      position={position}
-      rotation={rotation}
-      scale={[scale, scale, scale]}
-    >
-      {/* Base platform */}
+    <group position={position} rotation={rotation} scale={[scale, scale, scale]}>
+      {/* Sol de la scène */}
       <mesh position={[0, 0.5, 0]} receiveShadow castShadow>
-        <boxGeometry args={[20, 1, 20]} />
-        <meshStandardMaterial color="#444444" />
+        <boxGeometry args={[40, 1, 25]} />
+        <meshStandardMaterial color="#1a1a1a" />
       </mesh>
-      
-      {/* Tent structure */}
-      <group ref={tentRef}>
-        {/* Tent center pole */}
-        <mesh position={[0, 12, 0]} castShadow>
-          <cylinderGeometry args={[0.5, 0.5, 24, 8]} />
-          <meshStandardMaterial color="#777777" />
+
+      {/* Structure métallique en arc */}
+      {[...Array(6)].map((_, i) => (
+        <mesh key={i} position={[-15 + i * 6, 7, 0]} rotation={[0, 0, Math.PI / 2]} castShadow>
+          <cylinderGeometry args={[0.3, 0.3, 14, 8]} />
+          <meshStandardMaterial color="#888" />
         </mesh>
-        
-        {/* Tent fabric - simplified as a cone */}
-        <mesh position={[0, 12, 0]} castShadow>
-          <coneGeometry args={[15, 12, 16, 1, true]} />
-          <meshStandardMaterial 
-            color="#6937FF" 
-            side={THREE.DoubleSide}
-            transparent={true}
-            opacity={0.9}
-          />
+      ))}
+
+      {/* Tente conique transparente */}
+      <mesh position={[0, 12, 0]} castShadow>
+        <coneGeometry args={[25, 16, 32, 1, true]} />
+        <meshStandardMaterial color="#5A00FF" transparent opacity={0.7} side={THREE.DoubleSide} />
+      </mesh>
+
+      {/* DJ Booth */}
+      <mesh position={[0, 2, -10]} castShadow>
+        <boxGeometry args={[10, 2, 4]} />
+        <meshStandardMaterial color="#000" />
+      </mesh>
+      <mesh position={[0, 3, -10]} castShadow>
+        <boxGeometry args={[7, 0.5, 2]} />
+        <meshStandardMaterial color="#222" />
+      </mesh>
+
+      {/* Mur LED */}
+      <mesh position={[0, 6, -12]} castShadow>
+        <planeGeometry args={[12, 6]} />
+        <meshStandardMaterial emissive="#ffffff" emissiveIntensity={0.3} color="#111" />
+      </mesh>
+
+      {/* Enceintes gauche/droite */}
+      {[-8, 8].map((x, i) => (
+        <mesh key={i} position={[x, 3, -10]} castShadow>
+          <boxGeometry args={[2, 5, 2]} />
+          <meshStandardMaterial color="#2e2e2e" />
         </mesh>
-        
-        {/* DJ booth */}
-        <mesh position={[0, 2, -6]} castShadow>
-          <boxGeometry args={[8, 2, 4]} />
-          <meshStandardMaterial color="#222222" />
+      ))}
+
+      {/* Rig de lumières */}
+      <group ref={lightsRef} position={[0, 12, 0]}>
+        <mesh castShadow>
+          <boxGeometry args={[20, 0.4, 0.4]} />
+          <meshStandardMaterial color="#888" />
         </mesh>
-        
-        {/* DJ equipment */}
-        <mesh position={[0, 3, -6]} castShadow>
-          <boxGeometry args={[6, 0.5, 2]} />
-          <meshStandardMaterial color="#111111" />
-        </mesh>
-        
-        {/* Speaker left */}
-        <mesh position={[-5, 3, -6]} castShadow>
-          <boxGeometry args={[2, 4, 2]} />
-          <meshStandardMaterial color="#333333" />
-        </mesh>
-        
-        {/* Speaker right */}
-        <mesh position={[5, 3, -6]} castShadow>
-          <boxGeometry args={[2, 4, 2]} />
-          <meshStandardMaterial color="#333333" />
-        </mesh>
-        
-        {/* Light rig */}
-        <group ref={lightsRef} position={[0, 12, 0]}>
-          {/* Light fixture - horizontal bar */}
-          <mesh castShadow>
-            <boxGeometry args={[16, 0.5, 0.5]} />
-            <meshStandardMaterial color="#555555" />
-          </mesh>
-          
-          {/* Light sources - only visible at night */}
-          {!isDayMode && (
-            <>
-              <pointLight position={[-6, 0, 0]} intensity={3} color="#ff00ff" distance={30} decay={2} />
-              <pointLight position={[-2, 0, 0]} intensity={3} color="#00ffff" distance={30} decay={2} />
-              <pointLight position={[2, 0, 0]} intensity={3} color="#ffff00" distance={30} decay={2} />
-              <pointLight position={[6, 0, 0]} intensity={3} color="#00ff00" distance={30} decay={2} />
-            </>
-          )}
-        </group>
+        {!isDayMode && (
+          <>
+            {[-8, -4, 0, 4, 8].map((x, i) => (
+              <pointLight
+                key={i}
+                position={[x, 0, 0]}
+                intensity={3}
+                distance={40}
+                decay={2}
+                color={new THREE.Color().setHSL((i * 0.2) % 1, 1, 0.5)}
+              />
+            ))}
+          </>
+        )}
       </group>
     </group>
   );
